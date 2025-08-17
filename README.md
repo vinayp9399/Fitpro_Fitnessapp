@@ -1,4 +1,28 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
+Fitness & Nutrition Tracking Platform built with Next.js 15, Tailwind CSS 4, and MongoDB via Mongoose.
+
+Quickstart
+
+1. Copy env file
+
+```bash
+cp .env.local.example .env.local
+```
+
+2. Set `MONGODB_URI` in `.env.local`
+
+3. Install deps and run
+
+```bash
+npm i
+npm run dev
+```
+
+API
+
+- `GET /api/workouts?userId=demo-user`
+- `POST /api/workouts` JSON: `{ userId, date, type, durationMinutes, caloriesBurned?, notes? }`
+- `GET /api/meals?userId=demo-user`
+- `POST /api/meals` JSON: `{ userId, date, name, calories, proteinGrams?, carbsGrams?, fatGrams?, notes? }`
 
 ## Getting Started
 

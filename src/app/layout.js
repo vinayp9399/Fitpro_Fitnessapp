@@ -19,9 +19,10 @@ export const metadata = {
 export default function RootLayout({ children }) {
   return (
     <html lang="en">
-      <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
-      >
+      <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
+        <main role="main" className="sr-only">
+          Fitness & Nutrition Tracking Platform dashboard. Log workouts and meals, and review your recent activity and nutrition totals.
+        </main>
         {children}
       </body>
     </html>
