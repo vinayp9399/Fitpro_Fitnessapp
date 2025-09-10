@@ -9,20 +9,33 @@ export default function Login() {
     password: "",
   });
   const [loading, setLoading] = useState(false);
+  const [serverError, setServerError] = useState("");
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setServerError("");
     setLoading(true);
-    
-    // TODO: Implement actual login logic
-    console.log("Login attempt:", formData);
-    
-    // Simulate API call
-    setTimeout(() => {
+    try {
+      const res = await fetch("/api/auth/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(formData),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        setServerError(data?.error || "Login failed");
+        setLoading(false);
+        return;
+      }
+      // Persist user and redirect to dashboard
+      try {
+        localStorage.setItem("currentUser", JSON.stringify(data));
+      } catch {}
+      window.location.href = "/dashboard";
+    } catch (err) {
+      setServerError("Network error. Please try again.");
       setLoading(false);
-      // Redirect to dashboard after successful login
-      window.location.href = "/";
-    }, 1000);
+    }
   };
 
   const handleChange = (e) => {
@@ -43,6 +56,11 @@ export default function Login() {
         </div>
         
         <div className="bg-white py-8 px-6 shadow rounded-lg">
+          {serverError && (
+            <div className="mb-4 p-3 rounded border border-red-200 bg-red-50 text-red-700 text-sm">
+              {serverError}
+            </div>
+          )}
           <form className="space-y-6" onSubmit={handleSubmit}>
             <div>
               <label htmlFor="email" className="block text-sm font-medium text-gray-700">

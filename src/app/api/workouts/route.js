@@ -9,6 +9,13 @@ export async function GET(request) {
   const from = searchParams.get("from");
   const to = searchParams.get("to");
 
+  if (!userId) {
+    return NextResponse.json(
+      { error: 'Missing required parameter: userId' },
+      { status: 400 }
+    );
+  }
+
   const query = {};
   if (userId) query.userId = userId;
   if (from || to) {
@@ -24,7 +31,40 @@ export async function GET(request) {
 export async function POST(request) {
   await connectToDatabase();
   const data = await request.json();
-  const workout = await Workout.create(data);
+
+  const requiredFields = ["userId", "date", "type", "durationMinutes"];
+  const missing = requiredFields.filter((key) => data[key] === undefined || data[key] === null || data[key] === "");
+  if (missing.length > 0) {
+    return NextResponse.json(
+      { error: `Missing required field(s): ${missing.join(", ")}` },
+      { status: 400 }
+    );
+  }
+
+  const parsedDate = new Date(data.date);
+  if (isNaN(parsedDate.getTime())) {
+    return NextResponse.json(
+      { error: 'Invalid date format for field: date' },
+      { status: 400 }
+    );
+  }
+  if (typeof data.durationMinutes !== 'number' || data.durationMinutes < 0) {
+    return NextResponse.json(
+      { error: 'Field durationMinutes must be a non-negative number' },
+      { status: 400 }
+    );
+  }
+
+  const payload = {
+    userId: String(data.userId),
+    date: parsedDate,
+    type: String(data.type),
+    durationMinutes: data.durationMinutes,
+    caloriesBurned: typeof data.caloriesBurned === 'number' ? data.caloriesBurned : 0,
+    notes: typeof data.notes === 'string' ? data.notes : "",
+  };
+
+  const workout = await Workout.create(payload);
   return NextResponse.json(workout, { status: 201 });
 }
 

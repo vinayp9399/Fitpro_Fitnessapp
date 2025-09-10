@@ -2,27 +2,61 @@
 
 import { useEffect, useState } from "react";
 
-const DEFAULT_USER_ID = "demo-user";
+const DEFAULT_USER_ID = null;
 
 export default function MealsPage() {
   const [meals, setMeals] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [currentUser, setCurrentUser] = useState(null);
+
+  function getCurrentUserId() {
+    if (typeof window === 'undefined') return DEFAULT_USER_ID;
+    try {
+      const raw = localStorage.getItem('currentUser');
+      setCurrentUser(raw.split('"')[7]);
+      if (!raw) return DEFAULT_USER_ID;
+      const user = JSON.parse(raw);
+      return user?.id || user?._id || DEFAULT_USER_ID;
+    } catch {
+      return DEFAULT_USER_ID;
+    }
+  }
 
   async function fetchMeals() {
     setLoading(true);
-    const res = await fetch(`/api/meals?userId=${DEFAULT_USER_ID}`);
+    const uid = getCurrentUserId();
+    const res = await fetch(`/api/meals?userId=${uid}`);
     const json = await res.json();
     setMeals(json);
     setLoading(false);
   }
 
   useEffect(() => {
+    const uid = getCurrentUserId();
+    if (!uid) {
+      window.location.href = '/login';
+      return;
+    }
     fetchMeals();
   }, []);
 
+  function handleLogout(e) {
+    e?.preventDefault?.();
+    try {
+      localStorage.removeItem('currentUser');
+    } catch {}
+    window.location.href = '/login';
+  }
+
   async function handleAddMeal(formData) {
+    const uid = getCurrentUserId();
+    if (!uid) {
+      alert('Please log in again.');
+      window.location.href = '/login';
+      return;
+    }
     const payload = {
-      userId: DEFAULT_USER_ID,
+      userId: uid,
       date: formData.get("date"),
       name: formData.get("name"),
       calories: Number(formData.get("calories")),
@@ -44,13 +78,13 @@ export default function MealsPage() {
       <header className="min-h-screen fixed border-b bg-white w-60 bg-gradient-to-br from-blue-900/100 via-purple-900/100 to-pink-900/100">
         <div className="mx-auto max-w-5xl px-4 py-6">
           <div>
-            <div className="flex items-center gap-4 space-x-3">
-              <div className="w-15 h-15 bg-gray-200 rounded-lg flex items-center justify-center">
+            <div className="items-center text-center gap-4 space-x-3">
+              {/* <div className="w-15 h-15 bg-gray-200 rounded-lg flex items-center justify-center">
                 <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 </svg>
-              </div>
+              </div> */}
               <div>
-                <h1 className="text-2xl text-white font-semibold">Vinay</h1>
+                <h1 className="text-2xl text-white font-semibold">{currentUser}</h1>
               </div>
             </div>
             <nav className="mt-10">
@@ -66,13 +100,13 @@ export default function MealsPage() {
                 </svg>
                 <span>Workouts</span>
               </a>
-              <a href="/meals" className="pl-10 text-lg/10 text-gray-200 hover:bg-gray-900 flex items-center space-x-3 rounded">
+              <a href="/meals" className="pl-10 bg-gradient-to-br from-blue-800/100 via-purple-800/100 to-pink-800/100 text-lg/10 text-gray-200 hover:bg-gray-900 flex items-center space-x-3 rounded">
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3h2l.4 2M7 13h10l4-8H5.4m0 0L7 13m0 0l-2.5 5M7 13l2.5 5m6-5v6a2 2 0 01-2 2H9a2 2 0 01-2-2v-6m6 0V9a2 2 0 00-2-2H9a2 2 0 00-2 2v4.01M9 9h.01M15 9h.01" />
                 </svg>
                 <span>Meals</span>
               </a>
-              <a href="/" className="pl-10 text-lg/10 text-gray-200 hover:bg-gray-900 flex items-center space-x-3 rounded">Log Out</a>
+              <a href="#" onClick={handleLogout} className="pl-10 text-lg/10 text-gray-200 hover:bg-gray-900 flex items-center space-x-3 rounded">Log Out</a>
             </nav>
             <div className="flex items-center space-x-3 justify-center mt-50">
               <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg flex items-center justify-center">
@@ -133,8 +167,8 @@ export default function MealsPage() {
                 <li key={m._id} className="py-3">
                   <div className="flex items-center justify-between">
                     <div>
-                      <p className="font-medium">{m.name}</p>
-                      <p className="text-xs text-gray-600">
+                      <p className="font-medium text-white">{m.name}</p>
+                      <p className="text-xs text-white">
                         {new Date(m.date).toLocaleDateString()} • {m.calories} kcal • P{m.proteinGrams || 0} C{m.carbsGrams || 0} F{m.fatGrams || 0}
                       </p>
                     </div>

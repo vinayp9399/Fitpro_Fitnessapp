@@ -12,10 +12,12 @@ export default function Signup() {
   });
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState({});
+  const [serverError, setServerError] = useState("");
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setErrors({});
+    setServerError("");
     
     // Basic validation
     if (formData.password !== formData.confirmPassword) {
@@ -29,16 +31,28 @@ export default function Signup() {
     }
 
     setLoading(true);
-    
-    // TODO: Implement actual signup logic
-    console.log("Signup attempt:", formData);
-    
-    // Simulate API call
-    setTimeout(() => {
+    try {
+      const res = await fetch("/api/auth/signup", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name: formData.name,
+          email: formData.email,
+          password: formData.password,
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        setServerError(data?.error || "Signup failed");
+        setLoading(false);
+        return;
+      }
+      // Redirect after successful signup
+      window.location.href = "/login";
+    } catch (err) {
+      setServerError("Network error. Please try again.");
       setLoading(false);
-      // Redirect to dashboard after successful signup
-      window.location.href = "/";
-    }, 1000);
+    }
   };
 
   const handleChange = (e) => {
@@ -67,6 +81,11 @@ export default function Signup() {
         </div>
         
         <div className="bg-white py-8 px-6 shadow rounded-lg">
+          {serverError && (
+            <div className="mb-4 p-3 rounded border border-red-200 bg-red-50 text-red-700 text-sm">
+              {serverError}
+            </div>
+          )}
           <form className="space-y-6" onSubmit={handleSubmit}>
             <div>
               <label htmlFor="name" className="block text-sm font-medium text-gray-700">
