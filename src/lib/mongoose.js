@@ -9,7 +9,7 @@ if (!cached) {
 export async function connectToDatabase() {
   if (cached.conn) return cached.conn;
 
-  const mongoUri = process.env.MONGODB_URI || 'mongodb://localhost:27017/fitness_tracker';
+  const mongoUri = process.env.MONGODB_URI || 'mongodb+srv://vinayp9399:mechanic%4093@vinaycluster.03uocxi.mongodb.net/fitnessapp?retryWrites=true&w=majority&appName=VinayCluster';
   if (!mongoUri) {
     throw new Error("Missing MONGODB_URI environment variable");
   }
