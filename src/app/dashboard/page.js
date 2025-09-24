@@ -450,7 +450,7 @@ export default function Home() {
                 </svg>
               </div>
               <div>
-                <h1 className="text-lg text-white font-semibold">Today's Summary</h1>
+                <h1 className="text-lg text-white font-semibold">Today&apos;s Summary</h1>
               </div>
             </div>
           
